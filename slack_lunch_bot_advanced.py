@@ -1,7 +1,20 @@
 import os
 import random
+from threading import Thread
+from flask import Flask
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+
+# Flask 더미 서버 (Render가 포트를 감지하도록)
+flask_app = Flask(__name__)
+
+@flask_app.route('/')
+def home():
+    return "Slack Lunch Bot is running!"
+
+@flask_app.route('/health')
+def health():
+    return "OK"
 
 # Slack 앱 초기화
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
@@ -101,6 +114,16 @@ def lunch_help_command(ack, command, respond):
 
 # 앱 시작
 if __name__ == "__main__":
-    handler = SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN"))
-    print("⚡️ 점심 메뉴 봇이 실행되었습니다!")
-    handler.start()
+    # Slack 봇을 별도 스레드에서 실행
+    def run_slack_bot():
+        handler = SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN"))
+        print("⚡️ 점심 메뉴 봇이 실행되었습니다!")
+        handler.start()
+
+    # Slack 봇 시작
+    bot_thread = Thread(target=run_slack_bot, daemon=True)
+    bot_thread.start()
+
+    # Flask 서버 시작 (Render가 포트 감지용)
+    port = int(os.environ.get("PORT", 10000))
+    flask_app.run(host="0.0.0.0", port=port)
