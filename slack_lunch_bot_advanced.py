@@ -25,6 +25,9 @@ def lunch_command(ack, command, respond):
 
         selected_menu = random.choice(menus)
 
+        # 메뉴 리스트 포맷팅
+        menu_list = " | ".join(menus)
+
         # 채널 전체에 공개 (response_type을 in_channel로 설정)
         respond(
             response_type="in_channel",
@@ -48,7 +51,7 @@ def lunch_command(ack, command, respond):
                     "elements": [
                         {
                             "type": "mrkdwn",
-                            "text": f"맛있게 드세요! 🍽️ ({len(menus)}개 메뉴 중에서 선택)"
+                            "text": f"후보: {menu_list}"
                         }
                     ]
                 }
